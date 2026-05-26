@@ -1,0 +1,23 @@
+{
+  "name": "unraid-icon-manager",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A local web tool for editing Unraid Docker container icon template values.",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "fast-xml-parser": "^5.2.5",
+    "yauzl": "^3.2.0",
+    "ssh2-sftp-client": "^12.0.1",
+    "undici": "^7.11.0",
+    "zod": "^3.25.76"
+  }
+}

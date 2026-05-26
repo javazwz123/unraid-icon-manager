@@ -1,0 +1,11 @@
+node_modules/
+data/
+icons/
+assets/hd-icons/
+design-export/
+server.*.log
+.env
+agent.md
+npm-debug.log*
+coverage/
+.DS_Store

@@ -1,0 +1,11 @@
+node_modules
+data
+icons
+.git
+agent.md
+design-export
+server.*.log
+npm-debug.log*
+.env
+coverage
+assets/hd-icons

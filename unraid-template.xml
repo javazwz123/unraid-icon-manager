@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>unraid-icon-manager</Name>
+  <Repository>your-dockerhub-username/unraid-icon-manager:latest</Repository>
+  <Registry/>
+  <Network>bridge</Network>
+  <Privileged>false</Privileged>
+  <Support/>
+  <Project/>
+  <Overview>Manage Unraid Docker and Compose icons through SSH/SFTP. Local library icons are stored in a mapped icon directory and written as Unraid host paths.</Overview>
+  <Category>Tools:</Category>
+  <WebUI>http://[IP]:[PORT:3149]</WebUI>
+  <TemplateURL/>
+  <Icon/>
+  <ExtraParams/>
+  <PostArgs/>
+  <CPUset/>
+  <DateInstalled/>
+  <DonateText/>
+  <DonateLink/>
+  <Requires/>
+  <Config Name="Web UI" Target="3149" Default="3149" Mode="tcp" Description="Web interface port" Type="Port" Display="always" Required="true" Mask="false">3149</Config>
+  <Config Name="App Data" Target="/app/data" Default="/mnt/user/appdata/unraid-icon-manager" Mode="rw" Description="Persistent config and icon library data" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/unraid-icon-manager</Config>
+  <Config Name="Icon Files" Target="/app/icons" Default="/mnt/user/appdata/unraid-icon-manager/icons" Mode="rw" Description="Local icon files copied from the library. Set WebUI Unraid icon path to this host path." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/unraid-icon-manager/icons</Config>
+  <Config Name="Icon Store Dir" Target="UNRAID_ICON_STORE_DIR" Default="/app/icons" Mode="" Description="Container path used to store selected local icon files" Type="Variable" Display="advanced" Required="true" Mask="false">/app/icons</Config>
+  <Config Name="Secret" Target="UNRAID_ICON_SECRET" Default="change-this-secret" Mode="" Description="Long random string used to encrypt saved credentials" Type="Variable" Display="always" Required="true" Mask="true">change-this-secret</Config>
+</Container>

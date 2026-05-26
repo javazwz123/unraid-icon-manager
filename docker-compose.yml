@@ -1,0 +1,15 @@
+services:
+  unraid-icon-manager:
+    build: .
+    image: unraid-icon-manager:local
+    container_name: unraid-icon-manager
+    restart: unless-stopped
+    ports:
+      - "3149:3149"
+    environment:
+      PORT: "3149"
+      UNRAID_ICON_SECRET: "change-this-secret"
+      UNRAID_ICON_STORE_DIR: "/app/icons"
+    volumes:
+      - /mnt/user/appdata/unraid-icon-manager:/app/data
+      - /mnt/user/appdata/unraid-icon-manager/icons:/app/icons
