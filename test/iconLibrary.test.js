@@ -191,3 +191,47 @@ test('downloadIconLibrary expands zip archives without platform shell tools', as
     fs.rmSync(path.join(iconLibrariesDir, libraryId), { recursive: true, force: true });
   }
 });
+
+test('downloadIconLibrary merges icons from multiple zip subdirectories', async () => {
+  const libraryId = `download-multi-test-${crypto.randomUUID()}`;
+  const zipBuffer = Buffer.from(
+    'UEsDBBQAAAAIAK6julzxhmx6BQAAAAMAAAARAAAAcGFja1xmbGF0XG9uZS5wbmfLz0sFAFBLAwQUAAAACACuo7pcZorKEQUAAAADAAAAFAAAAHBhY2tccm91bmRlZFx0d28ucG5nKynPBwBQSwECFAAUAAAACACuo7pc8YZsegUAAAADAAAAEQAAAAAAAAAAAAAAAAAAAAAAcGFja1xmbGF0XG9uZS5wbmdQSwECFAAUAAAACACuo7pcZorKEQUAAAADAAAAFAAAAAAAAAAAAAAAAAA0AAAAcGFja1xyb3VuZGVkXHR3by5wbmdQSwUGAAAAAAIAAgCBAAAAawAAAAAA',
+    'base64'
+  );
+  const server = http.createServer((_request, response) => {
+    response.writeHead(200, {
+      'content-type': 'application/zip',
+      'content-length': zipBuffer.length
+    });
+    response.end(zipBuffer);
+  });
+
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const { port } = server.address();
+
+  try {
+    const result = await downloadIconLibrary({
+      iconLibraries: [
+        {
+          id: libraryId,
+          name: 'Download Multi Test',
+          zipUrl: `http://127.0.0.1:${port}/icons.zip`,
+          zipSubdir: 'pack/flat\npack/rounded'
+        }
+      ]
+    });
+
+    assert.equal(result.downloaded.iconCount, 2);
+    assert.equal(
+      fs.readFileSync(path.join(iconLibrariesDir, libraryId, 'one.png'), 'utf8'),
+      'one'
+    );
+    assert.equal(
+      fs.readFileSync(path.join(iconLibrariesDir, libraryId, 'two.png'), 'utf8'),
+      'two'
+    );
+  } finally {
+    await new Promise((resolve) => server.close(resolve));
+    fs.rmSync(path.join(iconLibrariesDir, libraryId), { recursive: true, force: true });
+  }
+});

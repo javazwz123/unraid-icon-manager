@@ -3,6 +3,7 @@ import {
   DEFAULT_ICON_LIBRARY,
   getIconLibrariesFromConfig,
   normalizeIconLibraryEntry,
+  normalizeZipSubdir,
   safeLibraryId
 } from './iconLibraryConfig.js';
 import { defaultHostIconPath, iconStoreDir } from './paths.js';
@@ -57,7 +58,7 @@ const iconLibraryInputSchema = z.object({
   id: optionalString.transform((value) => safeLibraryId(value || DEFAULT_ICON_LIBRARY.id)),
   name: optionalString.transform((value) => value.trim()),
   zipUrl: optionalString.transform((value) => value.trim() || DEFAULT_ICON_LIBRARY.zipUrl),
-  zipSubdir: optionalString.transform((value) => value.trim() || DEFAULT_ICON_LIBRARY.zipSubdir),
+  zipSubdir: optionalString.transform((value) => normalizeZipSubdir(value)),
   publicBaseUrl: optionalString.transform((value) => value.trim())
 }).superRefine((library, context) => {
   if (!isValidUrl(library.zipUrl)) {

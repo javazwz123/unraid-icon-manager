@@ -6,6 +6,21 @@ export const DEFAULT_ICON_LIBRARY = {
   publicBaseUrl: ''
 };
 
+export function parseZipSubdirs(value = '') {
+  const source = Array.isArray(value)
+    ? value
+    : String(value || '').split(/[\n,]+/);
+  const normalized = source
+    .map((item) => String(item || '').trim().replaceAll('\\', '/').replace(/^\/+|\/+$/g, ''))
+    .filter(Boolean);
+  return [...new Set(normalized)];
+}
+
+export function normalizeZipSubdir(value = '') {
+  const subdirs = parseZipSubdirs(value || DEFAULT_ICON_LIBRARY.zipSubdir);
+  return subdirs.length ? subdirs.join('\n') : DEFAULT_ICON_LIBRARY.zipSubdir;
+}
+
 export function safeLibraryId(value) {
   return String(value || DEFAULT_ICON_LIBRARY.id)
     .trim()
@@ -31,7 +46,7 @@ function normalizeLegacyLibrary(library = {}) {
     id,
     name,
     zipUrl: String(library.zipUrl || DEFAULT_ICON_LIBRARY.zipUrl).trim(),
-    zipSubdir: String(library.zipSubdir || DEFAULT_ICON_LIBRARY.zipSubdir).trim(),
+    zipSubdir: normalizeZipSubdir(library.zipSubdir),
     publicBaseUrl: String(library.publicBaseUrl || DEFAULT_ICON_LIBRARY.publicBaseUrl).trim()
   };
 }
@@ -44,7 +59,7 @@ export function normalizeIconLibraryEntry(library = {}, fallbackId = DEFAULT_ICO
     id,
     name: requestedName || defaultLibraryName(id),
     zipUrl: String(library.zipUrl || DEFAULT_ICON_LIBRARY.zipUrl).trim(),
-    zipSubdir: String(library.zipSubdir || DEFAULT_ICON_LIBRARY.zipSubdir).trim(),
+    zipSubdir: normalizeZipSubdir(library.zipSubdir),
     publicBaseUrl: String(library.publicBaseUrl || DEFAULT_ICON_LIBRARY.publicBaseUrl).trim()
   };
 }

@@ -8,7 +8,8 @@ import yauzl from 'yauzl';
 import {
   DEFAULT_ICON_LIBRARY,
   findIconLibrary,
-  getIconLibrariesFromConfig
+  getIconLibrariesFromConfig,
+  parseZipSubdirs
 } from './iconLibraryConfig.js';
 import { iconLibrariesDir } from './paths.js';
 
@@ -334,6 +335,21 @@ async function expandZip(zipPath, outputDir) {
   });
 }
 
+function copyDirectoryContents(sourceDir, targetDir) {
+  const entries = fs.readdirSync(sourceDir, { withFileTypes: true });
+  for (const entry of entries) {
+    const sourcePath = path.join(sourceDir, entry.name);
+    const targetPath = path.join(targetDir, entry.name);
+    if (entry.isDirectory()) {
+      fs.mkdirSync(targetPath, { recursive: true });
+      copyDirectoryContents(sourcePath, targetPath);
+      continue;
+    }
+    fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+    fs.copyFileSync(sourcePath, targetPath);
+  }
+}
+
 export async function downloadIconLibrary(config, libraryId = '', onProgress = () => {}) {
   const library = libraryId
     ? findIconLibrary(config, libraryId)
@@ -374,14 +390,28 @@ export async function downloadIconLibrary(config, libraryId = '', onProgress = (
       message: '正在整理图标文件',
       percent: 88
     });
-    const sourceDir = resolveInside(extractDir, library.zipSubdir);
-    if (!fs.existsSync(sourceDir)) {
-      throw new Error(`Icon library subdir not found in zip: ${library.zipSubdir}`);
+    const zipSubdirs = parseZipSubdirs(library.zipSubdir);
+    if (!zipSubdirs.length) {
+      throw new Error('Icon library subdir not configured');
     }
 
     fs.mkdirSync(iconLibrariesDir, { recursive: true });
     fs.rmSync(targetDir, { recursive: true, force: true });
-    fs.cpSync(sourceDir, targetDir, { recursive: true });
+    fs.mkdirSync(targetDir, { recursive: true });
+    const missingSubdirs = [];
+    for (const zipSubdir of zipSubdirs) {
+      const sourceDir = resolveInside(extractDir, zipSubdir);
+      if (!fs.existsSync(sourceDir) || !fs.statSync(sourceDir).isDirectory()) {
+        missingSubdirs.push(zipSubdir);
+        continue;
+      }
+      copyDirectoryContents(sourceDir, targetDir);
+    }
+
+    if (missingSubdirs.length === zipSubdirs.length) {
+      fs.rmSync(targetDir, { recursive: true, force: true });
+      throw new Error(`Icon library subdir not found in zip: ${missingSubdirs.join(', ')}`);
+    }
 
     const result = {
       downloadedLibraryId: library.id,

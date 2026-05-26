@@ -80,6 +80,7 @@ docker run -d \
 - 默认读取目录：`HD-Icons-main/border-radius`
 
 图标会在 WebUI 点击下载时按需保存到 `/app/data`，不会内置进镜像。
+如果一个 zip 里有多个图标目录，可以在“Zip 内图标目录”里一行填写一个目录，下载时会合并识别。
 
 #### ⚙️ 环境变量
 
@@ -197,6 +198,7 @@ This tool uses the `border-radius` icon set from HD Icons by default:
 - Default subdirectory: `HD-Icons-main/border-radius`
 
 Icons are downloaded on demand from the WebUI and saved under `/app/data`; they are not bundled into the image.
+If a zip contains multiple icon folders, enter one folder per line in `Zip icon directory`; they will be merged during download.
 
 #### ⚙️ Environment Variables
 

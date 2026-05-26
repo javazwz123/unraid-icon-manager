@@ -196,6 +196,14 @@ function safeLibraryId(value) {
     .toLowerCase() || DEFAULT_ICON_LIBRARY.id;
 }
 
+function normalizeZipSubdir(value) {
+  const subdirs = String(value || DEFAULT_ICON_LIBRARY.zipSubdir)
+    .split(/[\n,]+/)
+    .map((item) => item.trim().replaceAll('\\', '/').replace(/^\/+|\/+$/g, ''))
+    .filter(Boolean);
+  return [...new Set(subdirs)].join('\n') || DEFAULT_ICON_LIBRARY.zipSubdir;
+}
+
 function normalizeLibraryEntry(library = {}, fallbackId = DEFAULT_ICON_LIBRARY.id) {
   const requestedId = String(library.id || '').trim();
   const requestedName = String(library.name || '').trim();
@@ -204,7 +212,7 @@ function normalizeLibraryEntry(library = {}, fallbackId = DEFAULT_ICON_LIBRARY.i
     id,
     name: requestedName || (id === DEFAULT_ICON_LIBRARY.id ? DEFAULT_ICON_LIBRARY.name : id),
     zipUrl: String(library.zipUrl || DEFAULT_ICON_LIBRARY.zipUrl).trim(),
-    zipSubdir: String(library.zipSubdir || DEFAULT_ICON_LIBRARY.zipSubdir).trim(),
+    zipSubdir: normalizeZipSubdir(library.zipSubdir),
     publicBaseUrl: String(library.publicBaseUrl || DEFAULT_ICON_LIBRARY.publicBaseUrl).trim()
   };
 }
@@ -514,8 +522,8 @@ function renderLibraryManager(targetForm, libraries = getFormLibraries(targetFor
               <input data-library-field="zipUrl" type="url" value="${escapeHtml(library.zipUrl)}" placeholder="https://example.com/icons.zip">
             </label>
             <label class="wide-field">
-              <span>Zip 内图标目录</span>
-              <input data-library-field="zipSubdir" type="text" value="${escapeHtml(library.zipSubdir)}" placeholder="icons/border-radius">
+              <span>Zip 内图标目录（一行一个）</span>
+              <textarea data-library-field="zipSubdir" rows="3" placeholder="icons/border-radius&#10;icons/flat">${escapeHtml(library.zipSubdir)}</textarea>
             </label>
           </div>
         </div>

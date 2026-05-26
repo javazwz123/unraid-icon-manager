@@ -120,6 +120,24 @@ test('config accepts multiple icon libraries with stable ids', () => {
   );
 });
 
+test('config accepts multiple zip subdirectories per icon library', () => {
+  const parsed = configSchema.parse({
+    sshHost: 'tower.local',
+    sshUsername: 'root',
+    sshPassword: 'secret',
+    iconLibraries: [
+      {
+        id: 'multi-pack',
+        name: 'Multi Pack',
+        zipUrl: 'https://example.com/multi-pack.zip',
+        zipSubdir: 'pack/flat\npack/rounded, pack/flat'
+      }
+    ]
+  });
+
+  assert.equal(parsed.iconLibraries[0].zipSubdir, 'pack/flat\npack/rounded');
+});
+
 test('config rejects empty connection settings', () => {
   assert.throws(() => configSchema.parse({}), /SSH\/SFTP/);
 });
