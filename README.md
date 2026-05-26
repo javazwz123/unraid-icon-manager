@@ -65,6 +65,16 @@ docker run -d \
 6. 替换图标 - 搜索并选择新图标，或手动填写 URL / 本地路径
 7. 同步图标 - 写入 Unraid 模板并刷新目标容器
 
+#### 🖼️ 默认图标库
+
+本工具默认使用 HD Icons 的 `border-radius` 图标集：
+
+- 图标库地址：https://github.com/xushier/HD-Icons
+- 默认下载地址：https://github.com/xushier/HD-Icons/archive/refs/heads/main.zip
+- 默认读取目录：`HD-Icons-main/border-radius`
+
+图标会在 WebUI 点击下载时按需保存到 `/app/data`，不会内置进镜像。
+
 #### ⚙️ 环境变量
 
 | 变量名 | 默认值 | 说明 |
@@ -165,6 +175,16 @@ docker run -d \
 5. Download icon library - Download the default HD Icons library or add your own
 6. Replace icons - Search and select a new icon, or manually enter a URL / local path
 7. Sync icons - Write changes back to Unraid templates and refresh target containers
+
+#### 🖼️ Default Icon Library
+
+This tool uses the `border-radius` icon set from HD Icons by default:
+
+- Icon library: https://github.com/xushier/HD-Icons
+- Default download URL: https://github.com/xushier/HD-Icons/archive/refs/heads/main.zip
+- Default subdirectory: `HD-Icons-main/border-radius`
+
+Icons are downloaded on demand from the WebUI and saved under `/app/data`; they are not bundled into the image.
 
 #### ⚙️ Environment Variables
 
