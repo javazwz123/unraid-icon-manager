@@ -1,157 +1,179 @@
 # Unraid Icon Manager
 
-这是一个本地运行的 Web 工具，用来管理 Unraid Docker / Compose 项目的图标。
+一个用于 Unraid 的 Docker / Compose 图标管理工具。
 
-## 当前能力
+它通过 SSH 读取 Unraid 上的 Docker 状态、dockerMan 模板和 Compose Manager 配置，让你可以在一个 Web 页面里搜索、预览、替换和同步容器图标。
 
-- 只通过 SSH/SFTP 连接 Unraid。
-- 通过 SSH 执行 `docker inspect` 读取真实容器状态、镜像和 Compose labels。
-- 读取 Docker 模板 XML：`/boot/config/plugins/dockerMan/templates-user`。
-- 读取 Compose Manager 项目：`/boot/config/plugins/compose.manager/projects`。
-- 修改普通 Docker 模板的 `<Icon>`。
-- 修改 Compose Manager 的 `net.unraid.docker.icon`。
-- 同步前自动创建远端 `.bak` 备份。
-- 同步后刷新对应容器：普通 Docker 使用 dockerMan rebuild 重新创建容器以刷新 label，Compose 服务使用 recreate。
-- 本地加密保存 SSH 凭据。
-- 支持多个本地图标库一起搜索和选择。
-- 从本地图标库选择图标时，复制到 Docker 映射的图标目录，并写入 Unraid 宿主机本地路径。
+## 功能
 
-## 连接说明
+- 通过 SSH/SFTP 连接 Unraid
+- 读取 Docker 容器状态和图标信息
+- 支持普通 Docker 模板和 Compose Manager 项目
+- 支持 URL 图标和 Unraid 本地路径图标
+- 支持下载并搜索本地图标库
+- 从图标库选择图标后自动复制到映射目录
+- 同步前自动备份原始模板
+- 同步后自动刷新目标容器图标
+- SSH 凭据只保存在本地数据目录，并加密存储
 
-Web/API 已不再用于主流程，因为它不能稳定替换 Docker 图标模板。本工具现在只需要 SSH/SFTP。
-
-SSH 用户需要能读取 Docker 状态，并能访问这些路径：
-
-```text
-/boot/config/plugins/dockerMan/templates-user
-/boot/config/plugins/compose.manager/projects
-```
-
-## 本地图标库
-
-默认不会随项目一起下载图标库，按需在界面里点击下载。
-
-默认图标库：
-
-```text
-名称: HD Icons
-内部 ID: hd-icons-border-radius
-Zip: https://github.com/xushier/HD-Icons/archive/refs/heads/main.zip
-目录: HD-Icons-main/border-radius
-```
-
-下载后的图标会保存在：
-
-```text
-data/icon-libraries/<library-id>/
-```
-
-选择本地图标后，程序会把图标复制到容器内图标目录：
-
-```text
-/app/icons
-```
-
-这个目录需要映射到 Unraid 宿主机，例如：
-
-```text
-/mnt/user/appdata/unraid-icon-manager/icons:/app/icons
-```
-
-WebUI 里的 `Unraid 本地图标路径` 默认是：
-
-```text
-/mnt/user/appdata/unraid-icon-manager/icons
-```
-
-从本地图标库选择图标后，最终写入 Unraid 的值会类似：
-
-```text
-/mnt/user/appdata/unraid-icon-manager/icons/plex-xxxxxxxxxx.png
-```
-
-## 本地运行
-
-```powershell
-npm.cmd install
-npm.cmd start
-```
-
-默认地址：
-
-```text
-http://localhost:3149
-```
-
-## Docker 运行
-
-构建并启动：
-
-```powershell
-docker compose up -d --build
-```
-
-默认端口：
-
-```text
-http://localhost:3149
-```
-
-数据会挂载到：
-
-```text
-./data:/app/data
-./icons:/app/icons
-```
-
-在 Unraid 上使用时，建议把 `docker-compose.yml` 里的 `UNRAID_ICON_SECRET` 改成自己的长随机字符串，并把图标目录映射到宿主机固定路径：
-
-```text
-/mnt/user/appdata/unraid-icon-manager/icons:/app/icons
-```
-
-如果不想用 compose，也可以直接运行：
-
-```powershell
-docker build -t unraid-icon-manager:local .
-docker run -d --name unraid-icon-manager --restart unless-stopped -p 3149:3149 -e UNRAID_ICON_SECRET=change-this-secret -e UNRAID_ICON_STORE_DIR=/app/icons -v ${PWD}/data:/app/data -v ${PWD}/icons:/app/icons unraid-icon-manager:local
-```
-
-### Unraid 部署提示
-
-如果在 Unraid 本机上构建：
+## Docker 部署
 
 ```bash
-cd /mnt/user/appdata/unraid-icon-manager-src
-docker build -t unraid-icon-manager:local .
-docker run -d --name unraid-icon-manager --restart unless-stopped \
+docker run -d \
+  --name unraid-icon-manager \
+  --restart unless-stopped \
   -p 3149:3149 \
   -e UNRAID_ICON_SECRET="change-this-secret" \
   -e UNRAID_ICON_STORE_DIR="/app/icons" \
   -v /mnt/user/appdata/unraid-icon-manager:/app/data \
   -v /mnt/user/appdata/unraid-icon-manager/icons:/app/icons \
-  unraid-icon-manager:local
+  your-dockerhub-username/unraid-icon-manager:latest
 ```
 
-也可以参考 `unraid-template.xml` 创建 Docker 模板。当前镜像名是本地构建用的 `unraid-icon-manager:local`；后续推送到镜像仓库后，把模板里的 `Repository` 改成实际镜像名即可。
-
-## 验证
-
-```powershell
-npm.cmd test
-```
-
-## Local path icon preview
-
-The WebUI previews local path icons in two ways:
-
-- Paths under `Unraid local icon path` are mapped to the container icon directory, such as `/app/icons`.
-- Paths outside that mapped directory must be added to `SSH icon preview allowlist` in advanced settings. The app will then read only those allowed image files through SSH/SFTP.
-
-Example allowlist entry:
+打开：
 
 ```text
-/boot/config/plugins/dockerMan/images
+http://你的Unraid-IP:3149
 ```
 
-The allowlist is only for preview. Supported image extensions are `.png`, `.jpg`, `.jpeg`, `.webp`, `.gif`, `.svg`, and `.ico`.
+建议把 `UNRAID_ICON_SECRET` 改成自己的长随机字符串。
+
+## Docker Compose
+
+```yaml
+services:
+  unraid-icon-manager:
+    image: your-dockerhub-username/unraid-icon-manager:latest
+    container_name: unraid-icon-manager
+    restart: unless-stopped
+    ports:
+      - "3149:3149"
+    environment:
+      PORT: "3149"
+      UNRAID_ICON_SECRET: "change-this-secret"
+      UNRAID_ICON_STORE_DIR: "/app/icons"
+    volumes:
+      - /mnt/user/appdata/unraid-icon-manager:/app/data
+      - /mnt/user/appdata/unraid-icon-manager/icons:/app/icons
+```
+
+## 路径说明
+
+`/app/data` 用于保存配置、加密凭据和已下载的图标库。
+
+`/app/icons` 用于保存从本地图标库选择后复制出来的图标文件。
+
+WebUI 里的 `Unraid 本地图标路径` 需要填写宿主机路径，默认：
+
+```text
+/mnt/user/appdata/unraid-icon-manager/icons
+```
+
+这个路径必须和 `/app/icons` 的 Docker 映射对应，否则 Unraid 可能找不到图标文件。
+
+## 使用步骤
+
+1. 启动容器并打开 WebUI
+2. 填写 Unraid SSH 地址、端口、用户名和密码
+3. 保存设置并测试连接
+4. 读取 Docker 列表
+5. 下载或配置图标库
+6. 选择新图标并同步
+
+## 注意
+
+- 本工具只通过 SSH/SFTP 工作，不需要 Unraid Web API。
+- 普通 Docker 图标同步后会调用 Unraid dockerMan 的 rebuild 脚本刷新 label，目标容器会短暂停止并重新创建。
+- Compose Manager 项目会通过 `docker compose up -d --force-recreate --no-deps` 刷新对应服务。
+- 第一次使用建议先选择一个不重要的容器测试。
+
+---
+
+# Unraid Icon Manager
+
+A simple web tool for managing Docker and Compose icons on Unraid.
+
+It connects to Unraid through SSH, reads Docker status, dockerMan templates, and Compose Manager files, then lets you search, preview, replace, and sync container icons from one clean Web UI.
+
+## Features
+
+- Connect to Unraid with SSH/SFTP
+- Read Docker container status and icon values
+- Support dockerMan templates and Compose Manager projects
+- Support URL icons and Unraid local path icons
+- Download and search local icon libraries
+- Copy selected library icons into a mapped icon directory
+- Backup template files before writing changes
+- Refresh target containers after syncing icons
+- Store SSH credentials only in the local data directory, encrypted
+
+## Docker Run
+
+```bash
+docker run -d \
+  --name unraid-icon-manager \
+  --restart unless-stopped \
+  -p 3149:3149 \
+  -e UNRAID_ICON_SECRET="change-this-secret" \
+  -e UNRAID_ICON_STORE_DIR="/app/icons" \
+  -v /mnt/user/appdata/unraid-icon-manager:/app/data \
+  -v /mnt/user/appdata/unraid-icon-manager/icons:/app/icons \
+  your-dockerhub-username/unraid-icon-manager:latest
+```
+
+Open:
+
+```text
+http://YOUR-UNRAID-IP:3149
+```
+
+Change `UNRAID_ICON_SECRET` to your own long random string.
+
+## Docker Compose
+
+```yaml
+services:
+  unraid-icon-manager:
+    image: your-dockerhub-username/unraid-icon-manager:latest
+    container_name: unraid-icon-manager
+    restart: unless-stopped
+    ports:
+      - "3149:3149"
+    environment:
+      PORT: "3149"
+      UNRAID_ICON_SECRET: "change-this-secret"
+      UNRAID_ICON_STORE_DIR: "/app/icons"
+    volumes:
+      - /mnt/user/appdata/unraid-icon-manager:/app/data
+      - /mnt/user/appdata/unraid-icon-manager/icons:/app/icons
+```
+
+## Path Notes
+
+`/app/data` stores app config, encrypted credentials, and downloaded icon libraries.
+
+`/app/icons` stores selected local icons copied from the icon library.
+
+In the WebUI, set `Unraid local icon path` to the host path mapped to `/app/icons`. Default:
+
+```text
+/mnt/user/appdata/unraid-icon-manager/icons
+```
+
+This host path must match the Docker volume mapping, otherwise Unraid may not be able to load the icon files.
+
+## How To Use
+
+1. Start the container and open the WebUI
+2. Enter your Unraid SSH host, port, username, and password
+3. Save settings and test the connection
+4. Load the Docker list
+5. Download or configure an icon library
+6. Pick new icons and sync them back to Unraid
+
+## Notes
+
+- This tool works through SSH/SFTP only. It does not need the Unraid Web API.
+- For normal Docker containers, syncing uses Unraid dockerMan rebuild to refresh labels. The target container will briefly stop and be recreated.
+- For Compose Manager projects, syncing recreates the target service with `docker compose up -d --force-recreate --no-deps`.
+- For first use, test with a non-critical container.
